@@ -12,7 +12,7 @@ mathjax: true
 # 准备
 首先，确保你能在本地运行并将静态文件传到github上。这一部分不是本文主要内容，不做详细描述。接下来，本文你按照一个存储库两个分支来讲解。一个分支为`main`，存储hexo，另一个分支为`gh-pages`，作为静态文件存储及github pages的源文件。
 
-接着，把你本地的hexo文件上传到`main`分支下。获取一个ssh，将公钥上传至github[SSH keys](https://github.com/settings/keys)，私钥作为Repository secrets上传到Action secrects(https://github.com/{YourUsername}/blog/settings/secrets/actions)，不妨设name为`SSH_PRIVATE_KEY`。
+接着，把你本地的hexo文件上传到`main`分支下。获取一个ssh，将公钥上传至github[SSH keys](https://github.com/settings/keys)，私钥作为Repository secrets上传到Action secrects(Settings-Secrets and variables-Actions secrets and variables-Repository secrets)，不妨设name为`SSH_PRIVATE_KEY`。
 
 做好这些准备工作，就可以来配置action了。
 # Action详解
