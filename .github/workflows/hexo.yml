@@ -1,0 +1,63 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: hexo CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # - name: List environment variables
+      #   run: |
+      #     # 打印所有环境变量名和值，Secrets 会被隐藏
+      #     printenv
+
+      #     # 或者只打印特定环境变量
+      #     echo "SSH_PRIVATE_KEY length: ${#SSH_PRIVATE_KEY}"
+      # - name: Test SSH key
+      #   run: |
+      #     if [ -z "$SSH_PRIVATE_KEY" ]; then
+      #       echo "SSH_PRIVATE_KEY 没有设置"
+      #     else
+      #       echo "SSH_PRIVATE_KEY 已经设置"
+      #     fi
+      #     # 只查看前两行，防止泄露完整私钥
+      #     head -n 2 ~/.ssh/id_rsa
+
+      #     # 可选：查看文件是否存在、权限
+      #     ls -l ~/.ssh/id_rsa
+      # - name: Test SSH
+      #   run: ssh -T git@github.com
+
+      - name: Install Hexo CLI
+        run: npm install -g hexo-cli
+      - name: Configure Git
+        run: |
+          git config --global user.name "baotianxia"
+          git config --global user.email "baopu01@outlook.com"
+      - run: npm install
+      - run: hexo g -d
