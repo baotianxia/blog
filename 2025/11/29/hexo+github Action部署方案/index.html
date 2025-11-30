@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>hexo+github Action部署方案 | BaoTx's Blog</title><meta name="author" content="BaoTx"><meta name="copyright" content="BaoTx"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言由于身边有很多台电脑，每次写blog都要pull和push，过于麻烦，于是打算尝试用githubAction自动部署 准备首先，确保你能在本地运行并将静态文件传到github上。这一部分不是本文主要内容，不做详细描述。接下来，本文你按照一个存储库两个分支来讲解。一个分支为main，存储hexo，另一个分支为gh-pages，作为静态文件存储及github pages的源文件。 接着，把你本地的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hexo+github Action部署方案">
+<meta property="og:url" content="https://b.3876707.xyz/2025/11/29/hexo+github%20Action%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="BaoTx&#39;s Blog">
+<meta property="og:description" content="前言由于身边有很多台电脑，每次写blog都要pull和push，过于麻烦，于是打算尝试用githubAction自动部署 准备首先，确保你能在本地运行并将静态文件传到github上。这一部分不是本文主要内容，不做详细描述。接下来，本文你按照一个存储库两个分支来讲解。一个分支为main，存储hexo，另一个分支为gh-pages，作为静态文件存储及github pages的源文件。 接着，把你本地的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://b.3876707.xyz/img/butterfly-icon.png">
+<meta property="article:published_time" content="2025-11-29T18:48:00.000Z">
+<meta property="article:modified_time" content="2025-11-30T06:44:26.156Z">
+<meta property="article:author" content="BaoTx">
+<meta property="article:tag" content="github">
+<meta property="article:tag" content="hexo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://b.3876707.xyz/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "hexo+github Action部署方案",
+  "url": "https://b.3876707.xyz/2025/11/29/hexo+github%20Action%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88/",
+  "image": "https://b.3876707.xyz/img/butterfly-icon.png",
+  "datePublished": "2025-11-29T18:48:00.000Z",
+  "dateModified": "2025-11-30T06:44:26.156Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "BaoTx",
+      "url": "https://b.3876707.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://b.3876707.xyz/2025/11/29/hexo+github%20Action%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.2"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'hexo+github Action部署方案',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 8.1.1"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">BaoTx's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">hexo+github Action部署方案</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">hexo+github Action部署方案</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-29T18:48:00.000Z" title="发表于 2025-11-29 18:48:00">2025-11-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-30T06:44:26.156Z" title="更新于 2025-11-30 06:44:26">2025-11-30</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>由于身边有很多台电脑，每次写blog都要pull和push，过于麻烦，于是打算尝试用githubAction自动部署</p>
+<h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><p>首先，确保你能在本地运行并将静态文件传到github上。这一部分不是本文主要内容，不做详细描述。接下来，本文你按照一个存储库两个分支来讲解。一个分支为<code>main</code>，存储hexo，另一个分支为<code>gh-pages</code>，作为静态文件存储及github pages的源文件。</p>
+<p>接着，把你本地的hexo文件上传到<code>main</code>分支下。获取一个ssh，将公钥上传至github<a target="_blank" rel="noopener" href="https://github.com/settings/keys">SSH keys</a>，私钥作为Repository secrets上传到Action secrects(Settings-Secrets and variables-Actions secrets and variables-Repository secrets)，不妨设name为<code>SSH_PRIVATE_KEY</code>。</p>
+<p>做好这些准备工作，就可以来配置action了。</p>
+<h1 id="Action详解"><a href="#Action详解" class="headerlink" title="Action详解"></a>Action详解</h1><p>你需要在<code>.github/workflows</code>下创建你的action文件，文件名任意，后缀为<code>yaml</code>。</p>
+<h2 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h2><p>触发条件按设为push到main分支，node版本设置为最新版。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">hexo</span> <span class="string">CI</span></span><br><span class="line"></span><br><span class="line"><span class="attr">on:</span></span><br><span class="line">  <span class="attr">push:</span></span><br><span class="line">    <span class="attr">branches:</span> [<span class="string">"main"</span>]</span><br><span class="line">  <span class="attr">pull_request:</span></span><br><span class="line">    <span class="attr">branches:</span> [<span class="string">"main"</span>]</span><br><span class="line"></span><br><span class="line"><span class="attr">jobs:</span></span><br><span class="line">  <span class="attr">build:</span></span><br><span class="line">    <span class="attr">runs-on:</span> <span class="string">ubuntu-latest</span></span><br><span class="line">    <span class="attr">timeout-minutes:</span> <span class="number">60</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">strategy:</span></span><br><span class="line">      <span class="attr">matrix:</span></span><br><span class="line">        <span class="attr">node-version:</span> [<span class="number">22.</span><span class="string">x</span>]</span><br></pre></td></tr></table></figure>
+
+<h2 id="修改-config-yaml"><a href="#修改-config-yaml" class="headerlink" title="修改__config.yaml"></a>修改__config.yaml</h2><p>主要修改点在于推送部分<code>deploy</code>。</p>
+<p>需要使用ssh连接推送，分支是<code>gh-pages</code></p>
+<p>以下是一个可能的示例：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">git@github.com:{YourUsername}/blog.git</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">gh-pages</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Steps"><a href="#Steps" class="headerlink" title="Steps"></a>Steps</h2><h3 id="Checkout-repository"><a href="#Checkout-repository" class="headerlink" title="Checkout repository"></a>Checkout repository</h3><p>我也不知道这个干什么用，但是既然github建议有，那就写上吧。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Checkout</span> <span class="string">repository</span></span><br><span class="line">  <span class="attr">uses:</span> <span class="string">actions/checkout@v4</span></span><br></pre></td></tr></table></figure>
+<h2 id="Setup-SSH"><a href="#Setup-SSH" class="headerlink" title="Setup SSH"></a>Setup SSH</h2><p>用于设置SSH密钥，这样才能在生成完毕后推送到<code>gh-pages</code>分支。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Setup</span> <span class="string">SSH</span></span><br><span class="line">  <span class="attr">run:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      mkdir -p ~/.ssh</span></span><br><span class="line"><span class="string">      echo "$SSH_PRIVATE_KEY" &gt; ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string">      chmod 600 ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string">      ssh-keyscan github.com &gt;&gt; ~/.ssh/known_hosts</span></span><br><span class="line"><span class="string"></span>  <span class="attr">env:</span></span><br><span class="line">      <span class="attr">SSH_PRIVATE_KEY:</span> <span class="string">${{</span> <span class="string">secrets.SSH_PRIVATE_KEY</span> <span class="string">}}</span></span><br></pre></td></tr></table></figure>
+<p>这个时候你设置的<code>SSH_PRIVATE_KEY</code>就起作用了。</p>
+<h2 id="hexo-启动"><a href="#hexo-启动" class="headerlink" title="hexo 启动"></a>hexo 启动</h2><p>就像你在本地运行一样。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Install</span> <span class="string">Hexo</span> <span class="string">CLI</span></span><br><span class="line">  <span class="attr">run:</span> <span class="string">npm</span> <span class="string">install</span> <span class="string">-g</span> <span class="string">hexo-cli</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Configure</span> <span class="string">Git</span></span><br><span class="line">  <span class="attr">run:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      git config --global user.name "{这里填你的github用户名}"</span></span><br><span class="line"><span class="string">      git config --global user.email "{填邮箱}"</span></span><br><span class="line"><span class="string"></span>  <span class="bullet">-</span> <span class="attr">run:</span> <span class="string">npm</span> <span class="string">install</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">run:</span> <span class="string">hexo</span> <span class="string">g</span> <span class="string">-d</span></span><br></pre></td></tr></table></figure>
+<p>或者，你也可以使用任何一个具有更改你的存储库权限的github用户，不过要注意ssh公钥上传</p>
+<h2 id="小帮助"><a href="#小帮助" class="headerlink" title="小帮助"></a>小帮助</h2><p>如果你在配置时遇到了一些问题，不妨做一下测试。主要问题就出现在ssh私钥的配置上。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Test</span> <span class="string">SSH</span> <span class="string">key</span></span><br><span class="line">  <span class="attr">run:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    # 只查看前两行，防止泄露完整私钥</span></span><br><span class="line"><span class="string">    head -n 2 ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string">    # 可选：查看文件是否存在、权限</span></span><br><span class="line"><span class="string">    ls -l ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string"></span><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Test</span> <span class="string">SSH</span></span><br><span class="line">  <span class="attr">run:</span> <span class="string">ssh</span> <span class="string">-T</span> <span class="string">git@github.com</span></span><br></pre></td></tr></table></figure>
+<p><code>Test SSH</code>出现return1为正常现象，观察终端返回即可。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">hexo</span> <span class="string">CI</span></span><br><span class="line"></span><br><span class="line"><span class="attr">on:</span></span><br><span class="line">  <span class="attr">push:</span></span><br><span class="line">    <span class="attr">branches:</span> [<span class="string">"main"</span>]</span><br><span class="line">  <span class="attr">pull_request:</span></span><br><span class="line">    <span class="attr">branches:</span> [<span class="string">"main"</span>]</span><br><span class="line"></span><br><span class="line"><span class="attr">jobs:</span></span><br><span class="line">  <span class="attr">build:</span></span><br><span class="line">    <span class="attr">runs-on:</span> <span class="string">ubuntu-latest</span></span><br><span class="line">    <span class="attr">timeout-minutes:</span> <span class="number">60</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">strategy:</span></span><br><span class="line">      <span class="attr">matrix:</span></span><br><span class="line">        <span class="attr">node-version:</span> [<span class="number">22.</span><span class="string">x</span>]</span><br><span class="line"></span><br><span class="line">    <span class="attr">steps:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Checkout</span> <span class="string">repository</span></span><br><span class="line">        <span class="attr">uses:</span> <span class="string">actions/checkout@v4</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Setup</span> <span class="string">SSH</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">|</span></span><br><span class="line"><span class="string">          mkdir -p ~/.ssh</span></span><br><span class="line"><span class="string">          echo "$SSH_PRIVATE_KEY" &gt; ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string">          chmod 600 ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string">          ssh-keyscan github.com &gt;&gt; ~/.ssh/known_hosts</span></span><br><span class="line"><span class="string"></span>        <span class="attr">env:</span></span><br><span class="line">          <span class="attr">SSH_PRIVATE_KEY:</span> <span class="string">${{</span> <span class="string">secrets.SSH_PRIVATE_KEY</span> <span class="string">}}</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">List</span> <span class="string">environment</span> <span class="string">variables</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">|</span></span><br><span class="line"><span class="string">          # 可选：查看文件是否存在、权限</span></span><br><span class="line"><span class="string">          ls -l ~/.ssh/id_rsa</span></span><br><span class="line"><span class="string"></span>      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Test</span> <span class="string">SSH</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">ssh</span> <span class="string">-T</span> <span class="string">git@github.com</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Install</span> <span class="string">Hexo</span> <span class="string">CLI</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">npm</span> <span class="string">install</span> <span class="string">-g</span> <span class="string">hexo-cli</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Configure</span> <span class="string">Git</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">|</span></span><br><span class="line"><span class="string">          git config --global user.name "{这里填你的github用户名}"</span></span><br><span class="line"><span class="string">          git config --global user.email "{填邮箱}"</span></span><br><span class="line"><span class="string"></span>      <span class="bullet">-</span> <span class="attr">run:</span> <span class="string">npm</span> <span class="string">install</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">run:</span> <span class="string">hexo</span> <span class="string">g</span> <span class="string">-d</span></span><br></pre></td></tr></table></figure>
+<p>把它上传到main分支，如果顺利的话你可以看到一个成功的action和一个新的分支<code>gh-pages</code>。注意将githubpages的Build and deployment的分支改为<code>gh-pages</code>。</p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>现在，在存储库页面点<code>.</code>号，进入<code>github.dev</code>，你就可以随时随地写blog了。</p>
+<p>本文就是这样写完的。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://b.3876707.xyz">BaoTx</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://b.3876707.xyz/2025/11/29/hexo+github%20Action%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88/">https://b.3876707.xyz/2025/11/29/hexo+github%20Action%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://b.3876707.xyz" target="_blank">BaoTx's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/github/">github</a><a class="post-meta__tags" href="/tags/hexo/">hexo</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/11/30/%E5%90%8C%E4%BD%99%E6%9C%80%E7%9F%AD%E8%B7%AF/" title="同余最短路"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">同余最短路</div></div><div class="info-2"><div class="info-item-1">同余最短路这是一个很有意思的算法，用于解决给定 n 个整数，求这 n 个整数能拼凑出多少的其他整数（n 个整数可以重复取）这一类问题，目的用于优化空间复杂度 例题有  种硬币，面额  求能凑出  中，有多少价钱可被凑出。  暴力做法考虑完全背包，但是  ，不可做 正解我们用  来作为  这样，我们可以用  来表示  的任意一数于是，我们对  的所有余数建图，即 0,1,2,3,4,5,6,7 共八个点接下来我们建边 对于3 (0+3)%8=3 0 to 3(1+3)%8=4 1 to 4(2+3)%8=5 2 to 5(3+3)%8=6 3 to 6(4+3)%8=7 4 to 7(5+3)%8=8 5 to 8(6+3)%8=1 6 to 1(7+3)%8=2 7 to 2 边权为3 对于7 (0+7)%8=7 0 to 7(1+7)%8=0 1 to 0(2+7)%8=1 2 to 1(3+7)%8=2 3 to 2(4+7)%8=3 4 to 3(5+7)%8=4 5 to 4(6+7)%8=5 6 to 5(7+7)%8=6 7 to 6 边权为7 对于8 (0+8)%8...</div></div></div></a><a class="pagination-related" href="/2025/11/28/csp2025%E6%B8%B8%E8%AE%B0/" title="csp2025游记"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">csp2025游记</div></div><div class="info-2"><div class="info-item-1"> 关于作者：初三，HA，蒟蒻  出发前带了6包魔芋爽，担心会不会不够吃。 J 组这个地方怎么这么堵！ 解控后发现 D 盘没有noi文件夹，于是查找 C 盘，居然找到了。速速安装 devcpp 并且测试。值得一提的是，今年居然提供了好看的 lemonlime。 到点开题，10 分钟做了 T1，20 分钟做了 T2。lemon 评测样例结果是全过。然后我发现 T2的题面也是一个样例，测了之后发现*我的循环mn写反了！*遂改正，力挽100pts。预计得分 看了看T3和T4。发现了T4的你只需要求出答案对 998,244,353 取模后的结果，认为T4是个DP。先看T3。从字典树想到了线段树，发现没有一个适合的。考虑了一个小时后吃了一包魔芋爽想起了暴力的力量，写了前缀和+模拟左右端点。预计得分。再考虑特使性质A和B。特殊性质B是一个组合数问题，但我忘记了公式，赛场上凭借记忆推出来了。可以再多，最终得分。  赛后发现似乎用map优化就能得到满分（？）再看T4，发现时间不够了吃了另外一包魔芋爽，请出dfs大神，获得了的高分。  预计得分：。 题外话：考试结束前1h时放上了挡板，不过挡了和不挡...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">BaoTx</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/baotianxia"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%86%E5%A4%87"><span class="toc-number">2.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Action%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">Action详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="toc-number">3.1.</span> <span class="toc-text">基本信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9-config-yaml"><span class="toc-number">3.2.</span> <span class="toc-text">修改__config.yaml</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Steps"><span class="toc-number">3.3.</span> <span class="toc-text">Steps</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Checkout-repository"><span class="toc-number">3.3.1.</span> <span class="toc-text">Checkout repository</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Setup-SSH"><span class="toc-number">3.4.</span> <span class="toc-text">Setup SSH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hexo-%E5%90%AF%E5%8A%A8"><span class="toc-number">3.5.</span> <span class="toc-text">hexo 启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E5%B8%AE%E5%8A%A9"><span class="toc-number">3.6.</span> <span class="toc-text">小帮助</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.7.</span> <span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">4.</span> <span class="toc-text">结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/30/%E5%90%8C%E4%BD%99%E6%9C%80%E7%9F%AD%E8%B7%AF/" title="同余最短路">同余最短路</a><time datetime="2025-11-30T00:00:00.000Z" title="发表于 2025-11-30 00:00:00">2025-11-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/30/%E6%A0%91%E7%9A%84%E7%9B%B4%E5%BE%84/" title="树的直径">树的直径</a><time datetime="2025-11-30T00:00:00.000Z" title="发表于 2025-11-30 00:00:00">2025-11-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/30/%E6%A0%91%E9%93%BE%E5%89%96%E5%88%86/" title="树链剖分">树链剖分</a><time datetime="2025-11-30T00:00:00.000Z" title="发表于 2025-11-30 00:00:00">2025-11-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/29/hexo+github%20Action%E9%83%A8%E7%BD%B2%E6%96%B9%E6%A1%88/" title="hexo+github Action部署方案">hexo+github Action部署方案</a><time datetime="2025-11-29T18:48:00.000Z" title="发表于 2025-11-29 18:48:00">2025-11-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/28/csp2025%E6%B8%B8%E8%AE%B0/" title="csp2025游记">csp2025游记</a><time datetime="2025-11-28T21:59:38.000Z" title="发表于 2025-11-28 21:59:38">2025-11-28</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By BaoTx</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.2</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.2"></script><script src="/js/main.js?v=5.5.2"></script><div class="js-pjax"></div><script async data-pjax src="/"></script></div></body></html>
