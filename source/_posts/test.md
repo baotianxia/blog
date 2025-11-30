@@ -1,7 +1,7 @@
 ---
 
 title: 测试文章
-date: 2025-11-28
+date: 2025-11-28 12:00:00
 tags:
 - 测试
 mathjax: true
