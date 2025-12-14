@@ -1,6 +1,4 @@
 ---
-title: 标签
+title: tags
 type: "tags"
-comments: false
-top_img: false
 ---

@@ -1,6 +1,4 @@
 ---
-title: 分类
-aside: false
-top_img: false
+title: categories
 type: "categories"
 ---
