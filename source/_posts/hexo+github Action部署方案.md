@@ -149,6 +149,15 @@ jobs:
       - run: hexo g -d
 ```
 把它上传到main分支，如果顺利的话你可以看到一个成功的action和一个新的分支`gh-pages`。注意将githubpages的Build and deployment的分支改为`gh-pages`。
+
+# Next的方案
+
+`2026/1/2` 看到了next的官方文档，发现上边有非常详细的关于远程部署的教程。
+
+> [Continuous Integration](https://theme-next.js.org/docs/getting-started/deployment#Continuous-Integration)
+
+不仅有github，还有`Cloudflare Pages` `Netlify` `Gitlab CI`
+
 # 结语
 现在，在存储库页面点`.`号，进入`github.dev`，你就可以随时随地写blog了。
 
