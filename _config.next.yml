@@ -185,7 +185,7 @@ links_settings:
   layout: block
 
 links:
-  xyh's blog: https://3876707.xyz
+  友情链接: /links
 
 # Table of Contents in the Sidebar
 # Front-matter variable (nonsupport wrap expand_all).
@@ -651,7 +651,7 @@ motion:
 # Progress bar in the top during page loading.
 # For more information: https://github.com/CodeByZach/pace
 pace:
-  enable: false
+  enable: true
   # All available colors:
   # black | blue | green | orange | pink | purple | red | silver | white | yellow
   color: blue
